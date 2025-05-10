@@ -1,6 +1,7 @@
 "use client"; // Mark as a Client Component
 
 import { useState } from "react";
+import PullRequestItem from "../components/PullRequestItem";
 
 // Define the expected structure of a diff object
 interface DiffItem {
@@ -114,22 +115,11 @@ export default function Home() {
           )}
 
           {diffs.length > 0 && (
-            <ul className="space-y-3 list-disc list-inside">
+            <div className="space-y-4">
               {diffs.map((item) => (
-                <li key={item.id} className="text-gray-800 dark:text-gray-200">
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    PR #{item.id}:
-                  </a>
-                  <span className="ml-2">{item.description}</span>
-                  {/* We won't display the full diff here, just the description */}
-                </li>
+                <PullRequestItem key={item.id} pr={item} />
               ))}
-            </ul>
+            </div>
           )}
 
           {isLoading && currentPage > 1 && (
