@@ -23,6 +23,7 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
   const [notes, setNotes] = useState<ReleaseNotes | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [streamingContent, setStreamingContent] = useState('');
+  const [expanded, setExpanded] = useState(true);
 
   // Load saved notes from localStorage on component mount
   useEffect(() => {
@@ -48,6 +49,7 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
     setError(null);
     setStreamingContent('');
     setNotes(null);
+    setExpanded(true);
     
     try {
       const response = await fetch('/api/generate-notes', {
@@ -156,24 +158,62 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
     setNotes(null);
   };
 
+  // Format content to replace markdown-style elements with HTML
+  const formatContent = (content: string) => {
+    if (!content) return content;
+    
+    // Replace bold markdown (**text**) with styled spans
+    let formatted = content.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-blue-700 dark:text-blue-400">$1</span>');
+    
+    // Convert bullet points
+    formatted = formatted.replace(/- (.*?)(?=\n|$)/g, '<li class="ml-4">$1</li>');
+    
+    // Add paragraph breaks for readability
+    formatted = formatted.split('\n').filter(line => line.trim()).map(line => {
+      // Don't wrap lines that are already wrapped in HTML tags
+      if (line.startsWith('<') && line.endsWith('>')) {
+        return line;
+      }
+      return `<p class="mb-2">${line}</p>`;
+    }).join('');
+    
+    return formatted;
+  };
+
   return (
-    <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 mb-4">
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold">
-          <a 
-            href={pr.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-blue-600 dark:text-blue-400 hover:underline"
+    <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 mb-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center">
+          <button 
+            onClick={() => setExpanded(!expanded)} 
+            className="mr-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
+            aria-label={expanded ? "Collapse" : "Expand"}
           >
-            PR #{pr.id}: {pr.description}
-          </a>
-        </h3>
+            <svg 
+              className={`w-5 h-5 transition-transform duration-200 ${expanded ? 'transform rotate-90' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          <h3 className="text-lg font-semibold">
+            <a 
+              href={pr.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              PR #{pr.id}: {pr.description}
+            </a>
+          </h3>
+        </div>
         <div className="flex space-x-2">
           {!isGenerating && !notes && (
             <button
               onClick={generateReleaseNotes}
-              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm shadow-sm"
               disabled={isGenerating}
             >
               Generate Notes
@@ -182,7 +222,7 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
           {notes && (
             <button
               onClick={generateReleaseNotes}
-              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm shadow-sm"
               disabled={isGenerating}
             >
               Regenerate
@@ -191,7 +231,7 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
           {notes && (
             <button
               onClick={clearSavedNotes}
-              className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm"
+              className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm shadow-sm"
             >
               Clear
             </button>
@@ -199,57 +239,76 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
         </div>
       </div>
 
-      {error && (
-        <div className="text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-3 rounded mb-4">
-          Error: {error}
-        </div>
-      )}
+      {expanded && (
+        <>
+          {error && (
+            <div className="text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-3 rounded mb-4 shadow-sm">
+              Error: {error}
+            </div>
+          )}
 
-      {isGenerating && (
-        <div className="mt-4">
-          <div className="flex items-center mb-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-            <p className="text-gray-600 dark:text-gray-400">Generating release notes...</p>
-          </div>
-          {streamingContent && (
-            <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded border border-gray-300 dark:border-gray-700 whitespace-pre-wrap font-mono text-sm">
-              {streamingContent}
+          {isGenerating && (
+            <div className="mt-4">
+              <div className="flex items-center mb-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                <p className="text-gray-600 dark:text-gray-400">Generating release notes...</p>
+              </div>
+              {streamingContent && (
+                <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded border border-gray-300 dark:border-gray-700 whitespace-pre-wrap font-mono text-sm shadow-inner">
+                  {streamingContent}
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      {notes && (
-        <div className="mt-4 space-y-4">
-          <div>
-            <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1">Developer Notes:</h4>
-            <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded border border-gray-300 dark:border-gray-700">
-              {notes.developer}
-            </div>
-          </div>
-          <div>
-            <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1">Marketing Notes:</h4>
-            <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded border border-gray-300 dark:border-gray-700">
-              {notes.marketing}
-            </div>
-          </div>
-          {notes.contributors && notes.contributors !== 'No contributors identified' && (
-            <div>
-              <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1">Contributors:</h4>
-              <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded border border-gray-300 dark:border-gray-700">
-                {notes.contributors}
+          {notes && (
+            <div className="mt-4 space-y-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden shadow-sm">
+                <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 border-b border-gray-300 dark:border-gray-700">
+                  <h4 className="font-medium text-blue-800 dark:text-blue-300">Developer Notes</h4>
+                </div>
+                <div 
+                  className="p-4 prose prose-sm dark:prose-invert max-w-none" 
+                  dangerouslySetInnerHTML={{ __html: formatContent(notes.developer) }}
+                />
               </div>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden shadow-sm">
+                <div className="bg-green-50 dark:bg-green-900/20 px-4 py-2 border-b border-gray-300 dark:border-gray-700">
+                  <h4 className="font-medium text-green-800 dark:text-green-300">Marketing Notes</h4>
+                </div>
+                <div 
+                  className="p-4 prose prose-sm dark:prose-invert max-w-none" 
+                  dangerouslySetInnerHTML={{ __html: formatContent(notes.marketing) }}
+                />
+              </div>
+              
+              {notes.contributors && notes.contributors !== 'No contributors identified' && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden shadow-sm">
+                  <div className="bg-purple-50 dark:bg-purple-900/20 px-4 py-2 border-b border-gray-300 dark:border-gray-700">
+                    <h4 className="font-medium text-purple-800 dark:text-purple-300">Contributors</h4>
+                  </div>
+                  <div 
+                    className="p-4 prose prose-sm dark:prose-invert max-w-none" 
+                    dangerouslySetInnerHTML={{ __html: formatContent(notes.contributors) }}
+                  />
+                </div>
+              )}
+              
+              {notes.relatedIssues && notes.relatedIssues !== 'No related issues identified' && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden shadow-sm">
+                  <div className="bg-amber-50 dark:bg-amber-900/20 px-4 py-2 border-b border-gray-300 dark:border-gray-700">
+                    <h4 className="font-medium text-amber-800 dark:text-amber-300">Related Issues</h4>
+                  </div>
+                  <div 
+                    className="p-4 prose prose-sm dark:prose-invert max-w-none" 
+                    dangerouslySetInnerHTML={{ __html: formatContent(notes.relatedIssues) }}
+                  />
+                </div>
+              )}
             </div>
           )}
-          {notes.relatedIssues && notes.relatedIssues !== 'No related issues identified' && (
-            <div>
-              <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1">Related Issues:</h4>
-              <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded border border-gray-300 dark:border-gray-700">
-                {notes.relatedIssues}
-              </div>
-            </div>
-          )}
-        </div>
+        </>
       )}
     </div>
   );
