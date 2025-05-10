@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -21,12 +22,12 @@ export default function RootLayout({
         <header className="border-b border-blue-500/20 py-4 px-6 backdrop-blur-md bg-black/20 sticky top-0 z-50">
           <div className="container mx-auto flex justify-between items-center">
             <div className="flex items-center">
-              <a href="/" className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+              <Link href="/" className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
                   Diff Digest
                 </span>
                 <span className="text-blue-400">✍️</span>
-              </a>
+              </Link>
             </div>
             <div>
               <a 
