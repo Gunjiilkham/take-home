@@ -30,9 +30,17 @@ export async function POST(request: Request) {
            Use simpler language and focus on how this improves the product for end users.
            Avoid technical jargon and focus on value delivered.
 
+        3. CONTRIBUTORS: If identifiable in the diff, list key contributors to this change.
+           Look for patterns like "Signed-off-by", "Co-authored-by", or "Author" in the diff.
+
+        4. RELATED ISSUES: If identifiable in the diff or PR title, list related issues.
+           Look for patterns like "Fixes #123", "Closes #456", "Related to #789", etc.
+
         Respond in the following format:
         DEVELOPER_NOTES: [Your technical notes here]
         MARKETING_NOTES: [Your user-centric notes here]
+        CONTRIBUTORS: [List of contributors, if any]
+        RELATED_ISSUES: [List of related issues, if any]
 
         Here is the git diff:
         \`\`\`

@@ -14,6 +14,8 @@ interface PullRequestItemProps {
 interface ReleaseNotes {
   developer: string;
   marketing: string;
+  contributors?: string;
+  relatedIssues?: string;
 }
 
 export default function PullRequestItem({ pr }: PullRequestItemProps) {
@@ -102,34 +104,41 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
         }
       }
 
-      // Process the full content to extract developer and marketing notes
+      // Process the full content to extract all sections
       let developerNotes = '';
       let marketingNotes = '';
+      let contributors = '';
+      let relatedIssues = '';
       
-      // Basic splitting approach
-      if (fullContent.includes("DEVELOPER_NOTES:") && fullContent.includes("MARKETING_NOTES:")) {
-        const parts = fullContent.split("MARKETING_NOTES:");
-        if (parts.length === 2) {
-          developerNotes = parts[0].replace("DEVELOPER_NOTES:", "").trim();
-          marketingNotes = parts[1].trim();
-        }
-      } else {
-        // Fallback to regex if the simple split doesn't work
-        const developerMatch = fullContent.match(/DEVELOPER_NOTES:\s*([\s\S]*?)(?=\s*MARKETING_NOTES:|$)/i);
-        const marketingMatch = fullContent.match(/MARKETING_NOTES:\s*([\s\S]*?)(?=$)/i);
-        
-        if (developerMatch && developerMatch[1]) {
-          developerNotes = developerMatch[1].trim();
-        }
-        
-        if (marketingMatch && marketingMatch[1]) {
-          marketingNotes = marketingMatch[1].trim();
-        }
+      // Extract developer notes
+      const developerMatch = fullContent.match(/DEVELOPER_NOTES:\s*([\s\S]*?)(?=\s*MARKETING_NOTES:|CONTRIBUTORS:|RELATED_ISSUES:|$)/i);
+      if (developerMatch && developerMatch[1]) {
+        developerNotes = developerMatch[1].trim();
+      }
+      
+      // Extract marketing notes
+      const marketingMatch = fullContent.match(/MARKETING_NOTES:\s*([\s\S]*?)(?=\s*CONTRIBUTORS:|RELATED_ISSUES:|$)/i);
+      if (marketingMatch && marketingMatch[1]) {
+        marketingNotes = marketingMatch[1].trim();
+      }
+      
+      // Extract contributors
+      const contributorsMatch = fullContent.match(/CONTRIBUTORS:\s*([\s\S]*?)(?=\s*RELATED_ISSUES:|$)/i);
+      if (contributorsMatch && contributorsMatch[1]) {
+        contributors = contributorsMatch[1].trim();
+      }
+      
+      // Extract related issues
+      const relatedIssuesMatch = fullContent.match(/RELATED_ISSUES:\s*([\s\S]*?)(?=$)/i);
+      if (relatedIssuesMatch && relatedIssuesMatch[1]) {
+        relatedIssues = relatedIssuesMatch[1].trim();
       }
       
       const newNotes = {
         developer: developerNotes || 'No developer notes generated',
         marketing: marketingNotes || 'No marketing notes generated',
+        contributors: contributors || 'No contributors identified',
+        relatedIssues: relatedIssues || 'No related issues identified',
       };
 
       setNotes(newNotes);
@@ -224,6 +233,22 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
               {notes.marketing}
             </div>
           </div>
+          {notes.contributors && notes.contributors !== 'No contributors identified' && (
+            <div>
+              <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1">Contributors:</h4>
+              <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded border border-gray-300 dark:border-gray-700">
+                {notes.contributors}
+              </div>
+            </div>
+          )}
+          {notes.relatedIssues && notes.relatedIssues !== 'No related issues identified' && (
+            <div>
+              <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1">Related Issues:</h4>
+              <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded border border-gray-300 dark:border-gray-700">
+                {notes.relatedIssues}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
