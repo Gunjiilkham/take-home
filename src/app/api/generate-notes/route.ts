@@ -15,7 +15,7 @@ export async function POST(request: Request) {
         if (!diff) {
             return NextResponse.json({ error: 'Missing diff content' }, {status: 400});
         }
-        
+
         // Create a prompt for the OpenAI model
         const prompt = ` 
         You are an expert software developer and technical writer who specializes in creating dual-tone release notes.
@@ -45,6 +45,7 @@ export async function POST(request: Request) {
             model: process.env.OPENAI_MODEL || 'gpt-4o-mini', 
             messages: [
                 {role: 'system', content: 'You are a helpful assistant that generates release notes from git diffs.' },
+                {role: 'user', content: prompt }
             ],
             stream: true,
         });
