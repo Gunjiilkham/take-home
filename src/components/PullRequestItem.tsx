@@ -103,16 +103,37 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
       }
 
       // Process the full content to extract developer and marketing notes
-      const developerMatch = fullContent.match(/DEVELOPER_NOTES:\s*([\s\S]*?)(?=MARKETING_NOTES:|$)/i);
-      const marketingMatch = fullContent.match(/MARKETING_NOTES:\s*([\s\S]*?)(?=$)/i);
-
+      let developerNotes = '';
+      let marketingNotes = '';
+      
+      // Basic splitting approach
+      if (fullContent.includes("DEVELOPER_NOTES:") && fullContent.includes("MARKETING_NOTES:")) {
+        const parts = fullContent.split("MARKETING_NOTES:");
+        if (parts.length === 2) {
+          developerNotes = parts[0].replace("DEVELOPER_NOTES:", "").trim();
+          marketingNotes = parts[1].trim();
+        }
+      } else {
+        // Fallback to regex if the simple split doesn't work
+        const developerMatch = fullContent.match(/DEVELOPER_NOTES:\s*([\s\S]*?)(?=\s*MARKETING_NOTES:|$)/i);
+        const marketingMatch = fullContent.match(/MARKETING_NOTES:\s*([\s\S]*?)(?=$)/i);
+        
+        if (developerMatch && developerMatch[1]) {
+          developerNotes = developerMatch[1].trim();
+        }
+        
+        if (marketingMatch && marketingMatch[1]) {
+          marketingNotes = marketingMatch[1].trim();
+        }
+      }
+      
       const newNotes = {
-        developer: developerMatch ? developerMatch[1].trim() : 'No developer notes generated',
-        marketing: marketingMatch ? marketingMatch[1].trim() : 'No marketing notes generated',
+        developer: developerNotes || 'No developer notes generated',
+        marketing: marketingNotes || 'No marketing notes generated',
       };
 
       setNotes(newNotes);
-      // Save to localStorage immediately
+      // Save to localStorage 
       localStorage.setItem(`notes-${pr.id}`, JSON.stringify(newNotes));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');

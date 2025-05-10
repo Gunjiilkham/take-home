@@ -19,7 +19,7 @@ export async function POST(request: Request) {
         // Create a prompt for the OpenAI model
         const prompt = ` 
         You are an expert software developer and technical writer who specializes in creating dual-tone release notes.
-        Given the following git diff from a pull request titled "${prTitle || 'Unititled PR'}" (PR #${prId || 'Unknown'}),
+        Given the following git diff from a pull request titled "${prTitle || 'Untitled PR'}" (PR #${prId || 'Unknown'}),
         generate two types of release notes:
 
         1. DEVELOPER NOTES: Concise, technical explanation focusing on what changed and why.
@@ -29,10 +29,6 @@ export async function POST(request: Request) {
         2. MARKETING NOTES: User-centric explanation highlighting the benefits of this change.
            Use simpler language and focus on how this improves the product for end users.
            Avoid technical jargon and focus on value delivered.
-
-        Additionally, please identify:
-        - Key contributors involved in this change (if you can find any in the diff)
-        - Related issues or PRs mentioned in the diff or title
 
         Respond in the following format:
         DEVELOPER_NOTES: [Your technical notes here]
