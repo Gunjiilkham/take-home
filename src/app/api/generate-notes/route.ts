@@ -15,7 +15,7 @@ export async function POST(request: Request) {
         if (!diff) {
             return NextResponse.json({ error: 'Missing diff content' }, {status: 400});
         }
-
+        
         // Create a prompt for the OpenAI model
         const prompt = ` 
         You are an expert software developer and technical writer who specializes in creating dual-tone release notes.
@@ -30,6 +30,10 @@ export async function POST(request: Request) {
            Use simpler language and focus on how this improves the product for end users.
            Avoid technical jargon and focus on value delivered.
 
+        Additionally, please identify:
+        - Key contributors involved in this change (if you can find any in the diff)
+        - Related issues or PRs mentioned in the diff or title
+
         Respond in the following format:
         DEVELOPER_NOTES: [Your technical notes here]
         MARKETING_NOTES: [Your user-centric notes here]
@@ -40,7 +44,7 @@ export async function POST(request: Request) {
         \`\`\`
         `;
 
-        // Create a streaming repsonse from OpenAI
+        // Create a streaming response from OpenAI
         const stream = await openai.chat.completions.create({
             model: process.env.OPENAI_MODEL || 'gpt-4o-mini', 
             messages: [
@@ -56,11 +60,12 @@ export async function POST(request: Request) {
             async start(controller) {
                 for await (const chunk of stream) {
                     const content = chunk.choices[0]?.delta?.content || '';
-                    if(content) {
-                        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content})}\n\n`));
+                    if (content) {
+                        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
                     }
                 }
-                controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+                
+                controller.enqueue(encoder.encode('data: [DONE]\n\n'));
                 controller.close();
             },
         });
