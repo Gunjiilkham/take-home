@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface DiffItem {
   id: string;
@@ -21,6 +21,25 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
   const [notes, setNotes] = useState<ReleaseNotes | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [streamingContent, setStreamingContent] = useState('');
+
+  // Load saved notes from localStorage on component mount
+  useEffect(() => {
+    const savedNotes = localStorage.getItem(`notes-${pr.id}`);
+    if (savedNotes) {
+      try {
+        setNotes(JSON.parse(savedNotes));
+      } catch (e) {
+        console.error('Failed to parse saved notes:', e);
+      }
+    }
+  }, [pr.id]);
+
+  // Save notes to localStorage whenever they change
+  useEffect(() => {
+    if (notes) {
+      localStorage.setItem(`notes-${pr.id}`, JSON.stringify(notes));
+    }
+  }, [notes, pr.id]);
 
   const generateReleaseNotes = async () => {
     setIsGenerating(true);
@@ -87,15 +106,24 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
       const developerMatch = fullContent.match(/DEVELOPER_NOTES:\s*([\s\S]*?)(?=MARKETING_NOTES:|$)/i);
       const marketingMatch = fullContent.match(/MARKETING_NOTES:\s*([\s\S]*?)(?=$)/i);
 
-      setNotes({
+      const newNotes = {
         developer: developerMatch ? developerMatch[1].trim() : 'No developer notes generated',
         marketing: marketingMatch ? marketingMatch[1].trim() : 'No marketing notes generated',
-      });
+      };
+
+      setNotes(newNotes);
+      // Save to localStorage immediately
+      localStorage.setItem(`notes-${pr.id}`, JSON.stringify(newNotes));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const clearSavedNotes = () => {
+    localStorage.removeItem(`notes-${pr.id}`);
+    setNotes(null);
   };
 
   return (
@@ -111,15 +139,34 @@ export default function PullRequestItem({ pr }: PullRequestItemProps) {
             PR #{pr.id}: {pr.description}
           </a>
         </h3>
-        {!isGenerating && !notes && (
-          <button
-            onClick={generateReleaseNotes}
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
-            disabled={isGenerating}
-          >
-            Generate Notes
-          </button>
-        )}
+        <div className="flex space-x-2">
+          {!isGenerating && !notes && (
+            <button
+              onClick={generateReleaseNotes}
+              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+              disabled={isGenerating}
+            >
+              Generate Notes
+            </button>
+          )}
+          {notes && (
+            <button
+              onClick={generateReleaseNotes}
+              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+              disabled={isGenerating}
+            >
+              Regenerate
+            </button>
+          )}
+          {notes && (
+            <button
+              onClick={clearSavedNotes}
+              className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       {error && (
