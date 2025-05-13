@@ -1,5 +1,7 @@
 # a0.dev – Take-Home Interview: Diff Digest
 
+**Completed and deployed on:** https://take-home-xi.vercel.app/
+
 **Challenge:** Build a web experience that turns Git diffs into live, dual-tone release notes.  
 **Time-box:** 24 hours from when you received the email
 
