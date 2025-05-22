@@ -1,4 +1,4 @@
-# a0.dev – Take-Home Interview: Diff Digest
+# a0.dev – Diff Digest
 
 **Completed and deployed on:** https://take-home-xi.vercel.app/
 
@@ -11,8 +11,6 @@
 
 a0.dev ships AI-generated React Native apps at lightning speed.  
 We lean on LLMs, streaming APIs, and polished UIs.  
-This exercise lets you show how you design prompts, pipeline data, and craft front-end experiences.
-
 ---
 
 ## 2 · Current State
@@ -74,7 +72,7 @@ This exercise lets you show how you design prompts, pipeline data, and craft fro
 3.  **Render a UI** that updates live as chunks arrive, showing the generated release notes for the selected PR(s).
 4.  **Handle edge cases** (loading, network failure, malformed JSON, API errors) gracefully.
 
-You are free to decide:
+Decide:
 
 - How and which PR(s) to generate notes for.
 - How to display the streaming results.
