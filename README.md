@@ -135,7 +135,7 @@ You can still use your own OpenAI API key if you prefer.
 ## 7 · Submission
 
 - Upload the completed project to github and submit the Github Repo URL and live deployment URL to careers@a0.dev.
-- Submit by the 24-hour mark; avoid force-push after deadline.
+- Submit by the 24-hour mark; avoid force-push after deadline
 
 ---
 
