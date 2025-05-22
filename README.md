@@ -61,7 +61,7 @@ We lean on LLMs, streaming APIs, and polished UIs.
 
 ---
 
-## 3 · Your task
+## 3 ·
 
 1.  **(Partially Done)** **Fetch merged PR diffs** from `/api/sample-diffs` (the frontend currently fetches and lists PRs, but doesn't use the diff content yet).
 2.  **Send the relevant PR's** to an LLM and stream back _developer_ and _marketing_ release-note sentences.
