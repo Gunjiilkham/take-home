@@ -121,7 +121,7 @@ OPENAI_API_KEY=your_openai_api_key
 ```
 
 **Alternatively, you can use the provided free API key for this take-home assignment:**
-
+ 
 ```
 You can find the OpenAI key @ https://api.a0.dev/test-key
 ```
